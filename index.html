@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>RPG</title>
+    <style>
+        ::-webkit-scrollbar{
+            width:5px;
+        }
+        ::-webkit-scrollbar-thumb{
+            background-color: black;
+        }
+        body, html{
+            margin:0;
+            background-color:gray;
+            height: 100%;
+            overflow: hidden;
+        }
+        #canvas{
+            background-color:white;
+            cursor: crosshair;
+        }
+        #div{
+            position:absolute;
+            background-color: gold;
+            user-select: none;
+        }
+        #div2{
+            background-color: rgba(0, 0, 255, 0.6);
+            position: absolute;
+            user-select: none;
+            color:white;
+        }
+        #div4{
+            position: absolute;
+            left: 5px;
+            top: 35px;
+            width: calc(100% - 20px);
+            height: calc(100% - 105px);
+            overflow: auto;
+            padding:5px;
+            background-color: beige;
+            transition: height 0.5s;
+        }
+        #TA{
+            position: absolute;
+            left: 5px;
+            bottom: 10px;
+            width: calc(100% - 10px);
+            height: 35px;
+            resize: none;
+            margin: 0;
+            padding: 0;
+            border: 0;
+            transition: height 0.5s;
+        }
+        #TA:focus + #div4 {
+            height: 35px;
+        }
+        #TA:focus {
+            height: calc(100% - 105px);
+        }
+        #conMenu{
+            position:absolute;
+            display: none;
+            background-color: rgb(242, 242, 242);
+            width:300px;
+            height: auto;
+            padding: 10px 0;
+            border: 3px solid black;
+        }
+        .list:not(:first-child){
+            border-top:1px solid rgb(145, 145, 145);
+        }
+        .list{
+            margin-left: 30px;
+            width:calc(100% - 60px);
+            height: 30px;
+            user-select: none;
+        }
+        .list:hover{
+            background-color: rgba(0, 0, 255, 0.3);
+        }
+        .munList:hover, .munSang:hover{
+            background-color: rgba(255,0,255,0.3);
+        }
+        h4{
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+<iframe id="server" src="server.html" style="display: none;"></iframe>
+<script>
+const canvas = document.createElement('canvas');
+const ctx = canvas.getContext('2d');
+const div = document.createElement('div');
+const div2 = document.createElement('div');
+const div3 = [];
+const div4 = document.createElement('div');
+const textarea = document.createElement('textarea');
+const conMenu = document.createElement('div');
+canvas.id = 'canvas';
+canvas.width = 1280;
+canvas.height = 720;
+document.body.appendChild(canvas);
+div.id = 'div';
+div.style.width = '300px';
+div.style.height = '300px';
+div.style.left = 0;
+div.style.top = `100px`;
+div.style.display = 'block';
+document.body.appendChild(div);
+div.appendChild(div2);
+div2.id = 'div2';
+div2.textContent = ' 상태창';
+div2.style.left = 0;
+div2.style.top = 0;
+div2.style.width = '100%';
+div2.style.height = '30px';
+textarea.id = 'TA';
+conMenu.id = 'conMenu';
+div.appendChild(textarea);
+div4.id = 'div4';
+div.appendChild(div4);
+document.body.appendChild(conMenu);
+div2.onmousedown = (e) => {
+    let X = e.x - parseInt(div.style.left);
+    let Y = e.y - parseInt(div.style.top);
+    document.onmousemove = (e) => {
+        let xx = e.x;
+        let yy = e.y - 5;
+        div.style.left = `${xx - X}px`;
+        div.style.top = `${yy - Y}px`;
+    }
+}
+window.onmouseup = (e) => {
+    document.onmousemove = undefined;
+    screenCheck();
+}
+for(let i = 0; i < 4; i++){
+    div3[i] = document.createElement('div');
+    div.appendChild(div3[i]);
+    div3[i].style.position = 'absolute';
+    if(i < 2) {
+        div3[i].style.cursor = 'nw-resize';
+    } else {
+        div3[i].style.cursor = 'ne-resize';
+    }
+    div3[i].style.width = '10px';
+    div3[i].style.height = '10px';
+    if(i === 0) {
+        div3[i].onmousedown = (e) => {
+            document.onmousemove = (e) => {
+                let xx = e.x - 5;
+                let yy = e.y - 5;
+                let l = parseInt(div.style.left);
+                let t = parseInt(div.style.top);
+                div.style.width = `${parseInt(div.style.width) + l - xx}px`;
+                div.style.height = `${parseInt(div.style.height) + t - yy}px`;
+                div.style.left = `${xx}px`;
+                div.style.top = `${yy}px`;
+            }
+        }
+    } else if(i === 1) {
+        div3[i].onmousedown = (e) => {
+            document.onmousemove = (e) => {
+                let xx = e.x + 5;
+                let yy = e.y + 5;
+                let l = parseInt(div.style.left);
+                let t = parseInt(div.style.top);
+                div.style.width = `${xx + 5 - l}px`;
+                div.style.height = `${yy + 5 - t}px`;
+            }
+        }
+    } else if(i === 2) {
+        div3[i].onmousedown = (e) => {
+            document.onmousemove = (e) => {
+                let xx = e.x - 5;
+                let yy = e.y + 5;
+                let l = parseInt(div.style.left);
+                let t = parseInt(div.style.top);
+                div.style.width = `${parseInt(div.style.width) + l - xx}px`;
+                div.style.height = `${yy + 5 - t}px`;
+                div.style.left = `${xx}px`;
+            }
+        }
+    } else {
+        div3[i].onmousedown = (e) => {
+            document.onmousemove = (e) => {
+                let xx = e.x + 5;
+                let yy = e.y - 5;
+                let l = parseInt(div.style.left);
+                let t = parseInt(div.style.top);
+                div.style.width = `${xx + 5 - l}px`;
+                div.style.height = `${parseInt(div.style.height) + t - yy}px`;
+                div.style.top = `${yy}px`;
+            }
+        }
+    }
+}
+window.addEventListener('resize', re)
+div3[0].style.left = 0;
+div3[0].style.top = 0;
+div3[1].style.bottom = 0;
+div3[1].style.right = 0;
+div3[2].style.left = 0;
+div3[3].style.top = 0;
+div3[2].style.bottom = 0;
+div3[3].style.right = 0;
+function drawButton(x, y, w, h, rc, tc, text, lw, ts = 16){
+    ctx.save();
+    ctx.beginPath();
+    ctx.fillStyle = rc;
+    ctx.lineWidth = lw;
+    ctx.rect(x, y, w, h);
+    ctx.fill();
+    ctx.stroke();
+    ctx.closePath();
+    ctx.beginPath();
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = `bold ${ts}pt '맑은 고딕'`;
+    ctx.fillStyle = tc;
+    ctx.fillText(text, x + w / 2, y + h / 2);
+    ctx.closePath();
+    ctx.restore();
+}
+function re(e) {
+    if(window.innerWidth / window.innerHeight > 1280 / 720) {
+        canvas.style.height = '100%';
+        canvas.style.width = 'auto';
+    } else {
+        canvas.style.width = '100%';
+        canvas.style.height = 'auto';
+    }
+    screenCheck();
+};
+function check(x1, y1, x2, y2, w, h) {
+    if(x1 > x2 && x1 < x2 + w && y1 > y2 && y1 < y2 + h) {
+        return true;
+    }
+    return false;
+}
+function screenCheck(){
+    const l = parseInt(div.style.left);
+    const t = parseInt(div.style.top);
+    const w = parseInt(div.style.width);
+    const h = parseInt(div.style.height);
+    if(window.innerWidth < l + w) {
+        div.style.left = `${window.innerWidth - w}px`;
+    } else if(l < 0) {
+        div.style.left = 0;
+    }
+    if(window.innerHeight < t + h){
+        div.style.top = `${window.innerHeight - h}px`;
+    } else if(t < 0) {
+        div.style.top = 0;
+    }
+}
+function insert(data){
+    let request = indexedDB.open('M');
+    request.onerror = (e) => {
+        console.log('에러가 왜 났지?');
+    }
+    request.onsuccess = (e) => {
+        const db = request.result;
+        const objectStore = db.transaction(['저장된문제'], 'readwrite').objectStore('저장된문제');
+        objectStore.add(data);
+        munjae.set(data.key, data);
+    }
+}
+function modify(data){
+    let request = indexedDB.open('M');
+    request.onerror = (e) => {
+        console.log('에러가 왜 났지?');
+    }
+    request.onsuccess = (e) => {
+        const db = request.result;
+        const objectStore = db.transaction(['저장된문제'], 'readwrite').objectStore('저장된문제');
+        objectStore.put(data)
+    }
+}
+function del(key) {
+    let request = indexedDB.open('M');
+    request.onerror = (e) => {
+        console.log('에러가 왜 났지?');
+    }
+    request.onsuccess = (e) => {
+        const db = request.result;
+        const objectStore = db.transaction(['저장된문제'], 'readwrite').objectStore('저장된문제');
+        objectStore.delete(key);
+    }
+}
+function conData(data, color = 'black', action = null){
+    let temp = document.createElement('div');
+    temp.className = 'list';
+    temp.textContent = data;
+    temp.style.color = color;
+    temp.onclick = action;
+    conMenu.appendChild(temp);
+}
+let tp = {x:1};
+let p = new Proxy(tp, {
+    set: function(target, name, value){
+        if(name === 'l'){
+            console.log(`set : ${value}`);
+            div4.innerHTML = `<span style='font-size:30px'>${value}% 로딩</span>`
+            target[name] = value;
+            if(value === 100){
+                div4.innerHTML = `<span style='font-size:30px'>로딩 성공</span>`;
+            }
+            return value;
+        }
+    }
+});
+p.l = 0;
+let sujung = new Map();
+let sang = '상태창 숨기기';
+let ans;
+let MAP;
+let ready = 0;
+let request = indexedDB.open('M');
+const allMun = new Map();
+let munjae = new Map();
+let current;
+let sozi
+const KEY = [false, false, false, false];
+const MAX = 3200;
+const MAY = 1800;
+const v = 5;
+let choose = 0;
+request.onerror = (e) => {
+    console.log('에러가 왜 났지?');
+}
+request.onupgradeneeded = (e) => {
+    console.log('DB열기 성공');
+    const db = request.result;
+    const objectStore = db.createObjectStore('저장된문제', {keyPath : 'key'});
+    objectStore.createIndex('gong', 'gong', {unique: false});
+    objectStore.createIndex('category', 'category', {unique: false});
+    objectStore.createIndex('level', 'level', {unique: false});
+    objectStore.createIndex('summary', 'summary', {unique: false});
+    objectStore.createIndex('data', 'data', {unique: false});
+}
+request.onsuccess = (e) => {
+    const db = request.result;
+    const objectStore = db.transaction(['저장된문제'], 'readwrite').objectStore('저장된문제');
+    let cursor = objectStore.openCursor();
+    cursor.onsuccess = (e) => {
+        cursor = e.target.result;
+        if(cursor) {
+            munjae.set(cursor.value.key, cursor.value);
+            cursor.continue();
+        } else {
+            console.log('데이터 끝');
+        }
+    }
+}
+const server = document.getElementById('server');
+server.onload = () => {
+    server.contentWindow.postMessage({id:'login', num : 1}, '*');
+};
+console.log(server);
+window.addEventListener('message', (e) => {
+    console.log(e.data.id);
+    if(e.data.id === '문제생성') {
+        let data = e.data.data;
+        if(e.data.key === '성공') {
+            let X = parseInt(data.x / 640);
+            let Y = parseInt(data.y / 360);
+            data.x %= 640;
+            data.y %= 360;
+            if(MAP[Y][X]){
+                MAP[Y][X].push(data);
+            } else {
+                MAP[Y][X] = [data];
+            }
+        }
+        div4.innerHTML = `<span style='color:green'>문제가 만들어졌습니다!</span><br><span>문제 번호는 ${data.key}입니다.</span>`;
+        sozi -= data.sozi;
+    }
+    if(e.data.id === 'check') {
+        if(e.data.data === '정답') {
+            div2.textContent = ' 상태창';
+            div4.innerHTML = `<span style='color:green;font-size:30px'>정답!</span><br><span style='color:black;font-size:15px'>${e.data.sozi}$를 흭득했습니다!</span>`;
+            ans.add(e.data.num);
+            sozi += e.data.sozi;
+        } else {
+            div2.textContent = ' 상태창';
+            textarea.value = '오답입니다.';
+        }
+        return true;
+    }
+    if(e.data.id === 'comp') {
+        p.l += 20;
+        ans = e.data.data.ans;
+        sozi = e.data.data.sozi;
+        server.contentWindow.postMessage({id:'줘'}, '*');
+        return true;
+    }
+    if(e.data.id === 'MAP'){
+        p.l += 20;
+        console.log('성공');
+        MAP = e.data.data;
+        ready = 0;
+        let temp = ['init.js', 'click.js', 'main.js'];
+        for(let i = 0; i < temp.length; i++){
+            setTimeout(() => {
+                let temp2 = document.createElement('script');
+                temp2.onload = (e) => {
+                    p.l += 20;
+                }
+                temp2.src = temp[i];
+                document.body.appendChild(temp2);
+            }, i * 500);
+        }
+        return true;
+    }
+})
+</script>
+</body>
+</html>

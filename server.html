@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+<div id="XXX"></div>
+</body>
+<script src='data.js'></script>
+<script>
+    window.addEventListener('message', (e) => {
+        setTimeout(() => {
+            if(e.data.id === '문제') {
+                let data = e.data.data;
+                let mun = ANSWER.get(data[0]);
+                if(mun[1] === 'correct') {
+                    if(mun[0] == data[1]) {
+                        window.parent.postMessage({id:'check', data:'정답', num : data[0], sozi : data[2]}, '*');
+                        localStorage.ans += `,${data[0]}`;
+                        localStorage.sozi = parseInt(localStorage.sozi) + data[2];
+                    } else {
+                        window.parent.postMessage({id:'check', data:'오답'}, '*');
+                    }
+                } else if(mun[1] === 'coding') {
+                    let jung = (new Function(data[1]))();
+                    if(String(jung).trim() === mun[0]) {
+                        window.parent.postMessage({id:'check', data:'정답', num : data[0], sozi : data[2]}, '*');
+                        localStorage.ans += `,${data[0]}`;
+                        localStorage.sozi = parseInt(localStorage.sozi) + data[2];
+                    } else {
+                        window.parent.postMessage({id:'check', data:'오답'}, '*');
+                    }
+                } else {
+                    if(Math.abs(parseFloat(data[1]) - mun[0]) < parseFloat(mun[1])) {
+                        window.parent.postMessage({id:'check', data:'정답', num : data[0], sozi : data[2]}, '*');
+                        localStorage.ans += `,${data[0]}`;
+                    } else {
+                        window.parent.postMessage({id:'check', data:'오답'}, '*');
+                    }
+                }
+            } else if(e.data.id === '문제생성'){
+                let data = e.data.data;
+                data.key = `c${ii}`;
+                let X = parseInt(data.x / 640);
+                let Y = parseInt(data.y / 360);
+                let temp = JSON.stringify(data);
+                if(MAP[Y][X]){
+                    MAP[Y][X].push(data);
+                } else {
+                    MAP[Y][X] = [data];
+                }
+                ANSWER.set(data.key, [data.ans, data.what]);
+                localStorage[data.key] = temp;
+                ii++;
+                window.parent.postMessage({id:'문제생성',key :'성공', data:data}, '*');
+                localStorage.sozi = parseInt(localStorage.sozi) - data.sozi;
+            } else if(e.data.id === 'login') {
+                let temp = Chars.get(e.data.num);
+                window.parent.postMessage({id:'comp', data:temp}, '*');
+            } else if(e.data.id === '줘') {
+                window.parent.postMessage({id:'MAP', data:MAP}, '*');
+            }
+        }, 1000);
+    });
+</script>
+</html>
