@@ -300,7 +300,7 @@ server.html : 원래는 websocket서버를 만드려고 했으나 최근 크롬�
 
 상태창은 크기를 늘리거나 줄이거나 옮기길 수 있고, 오른쪽 클릭을 상태창만의 고유 contextmenu로 만들었다.
 
-![C6](./img/C6.gif)
+![C6](./img/C7.gif)
 
 
 
